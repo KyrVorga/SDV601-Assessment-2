@@ -1,0 +1,15 @@
+<HomeScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 10
+
+        Button:
+            text: "Open Login Screen"
+            size_hint: 0.2, 0.2
+            on_press: root.logout()
+
+        Button:
+            text: "Open Data Explorer Screen"
+            size_hint: 0.5, 0.2
+            on_press: root.open_data_explorer()
