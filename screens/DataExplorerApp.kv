@@ -1,0 +1,59 @@
+<DataExplorer>:
+    BoxLayout:
+        orientation: 'horizontal'
+        padding: 20
+        spacing: 20
+        canvas:
+            Color:
+                rgba: 0.5, 0.5, 0.5, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BoxLayout:
+            orientation: 'vertical'
+
+            BoxLayout:
+                orientation: 'horizontal'
+                spacing: 10
+
+                Button:
+                    text: 'Upload Data Source'
+                    size_hint: None, None
+                    size: 200, 40
+                    on_press: root.upload_data_source()
+
+                Button:
+                    text: 'Set Data Source'
+                    size_hint: None, None
+                    size: 150, 40
+                    on_press: root.set_data_source()
+
+                Button:
+                    text: 'Chart Settings'
+                    size_hint: None, None
+                    size: 150, 40
+                    on_press: root.chart_settings()
+
+                Button:
+                    text: 'Configure Data'
+                    size_hint: None, None
+                    size: 150, 40
+                    on_press: root.configure_data()
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.7
+
+
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.3
+
+                # Matplotlib chart can be embedded here
+                # You can use Python code to update it with dummy data
+
+
+        RV:
+            size_hint: 1, 1
