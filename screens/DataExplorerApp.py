@@ -1,7 +1,8 @@
 from kivy.app import App
 from kivy import Config
-from kivy.uix.recycleview import RecycleView
+from kivymd.app import MDApp
 from kivy.uix.boxlayout import BoxLayout
+from kivymd.uix.list import OneLineListItem
 
 Config.set('graphics', 'width', '1200')
 Config.set('graphics', 'height', '800')
@@ -23,16 +24,16 @@ class DataExplorer(BoxLayout):
         pass
 
 
-class DataExplorerApp(App):
+class DataExplorerApp(MDApp):
     def build(self):
         return DataExplorer()
 
-class RV(RecycleView):
-    def __init__(self, **kwargs):
-        super(RV, self).__init__(**kwargs)
-        self.data = [{'text': f'Instance {i}'} for i in range(1, 4)]
+    def on_start(self):
+        for i in range(20):
+            self.root.ids.chat_container.add_widget(
+                OneLineListItem(text=f"Single-line item {i}")
+            )
 
 
 if __name__ == '__main__':
-    # Builder.load_file("screens/DataExplorerApp.kv")
     DataExplorerApp().run()

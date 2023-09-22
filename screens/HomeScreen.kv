@@ -15,7 +15,7 @@
             size_hint_y: None
             height: 50
             orientation: 'horizontal'
-            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.1}
 
             Button:
                 text: 'Logout'
@@ -30,8 +30,17 @@
                 height: 50
                 pos_hint: {'center_x': 0.5, 'center_y': 0.5}
 
-        RV:
-            size_hint: 1, 1
+
+        BoxLayout:
+            size_hint_y: 2
+            size_hint_x: 0.7
+            orientation: 'horizontal'
+            pos_hint: {'center_x': 0.5}
+
+            ScrollView:
+                MDList:
+                    id: des_instances
+
 
         BoxLayout:
             orientation: 'horizontal'
@@ -54,6 +63,7 @@
             orientation: 'horizontal'
             spacing: 10
             size_hint_x: 0.7
+            size_hint_y: 0.2
             pos_hint: {'center_x': 0.5}
 
             TextInput:

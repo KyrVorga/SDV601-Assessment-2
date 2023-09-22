@@ -1,6 +1,6 @@
 <DataExplorer>:
     BoxLayout:
-        orientation: 'horizontal'
+        orientation: 'vertical'
         padding: 20
         spacing: 20
         canvas:
@@ -11,49 +11,76 @@
                 size: self.size
 
         BoxLayout:
-            orientation: 'vertical'
+            orientation: 'horizontal'
+            spacing: 10
+            padding: 10
+            size_hint_y: 0.1
+
+            Button:
+                text: 'Upload Data Source'
+                size_hint: None, None
+                size: 200, 40
+                on_press: root.upload_data_source()
+
+            Button:
+                text: 'Set Data Source'
+                size_hint: None, None
+                size: 150, 40
+                on_press: root.set_data_source()
+
+            Button:
+                text: 'Chart Settings'
+                size_hint: None, None
+                size: 150, 40
+                on_press: root.chart_settings()
+
+            Button:
+                text: 'Configure Data'
+                size_hint: None, None
+                size: 150, 40
+                on_press: root.configure_data()
+
+
+        BoxLayout:
+            orientation: 'horizontal'
 
             BoxLayout:
-                orientation: 'horizontal'
                 spacing: 10
-
-                Button:
-                    text: 'Upload Data Source'
-                    size_hint: None, None
-                    size: 200, 40
-                    on_press: root.upload_data_source()
-
-                Button:
-                    text: 'Set Data Source'
-                    size_hint: None, None
-                    size: 150, 40
-                    on_press: root.set_data_source()
-
-                Button:
-                    text: 'Chart Settings'
-                    size_hint: None, None
-                    size: 150, 40
-                    on_press: root.chart_settings()
-
-                Button:
-                    text: 'Configure Data'
-                    size_hint: None, None
-                    size: 150, 40
-                    on_press: root.configure_data()
-
-            BoxLayout:
+                padding: 10
                 orientation: 'vertical'
                 size_hint_x: 0.7
+                canvas:
+                    Color:
+                        rgba: 0.2, 0.2, 0.2, 1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
 
 
 
             BoxLayout:
                 orientation: 'vertical'
                 size_hint_x: 0.3
+                spacing: 10
+                padding: 10
 
-                # Matplotlib chart can be embedded here
-                # You can use Python code to update it with dummy data
+                ScrollView:
+                    MDList:
+                        id: chat_container
+
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: 0.1
+
+                    TextInput:
+                        size_hint_x: 0.7
+                        height: 40
+
+                    Button:
+                        height: 40
+                        size_hint_x: 0.3
+                        text: "send"
 
 
-        RV:
-            size_hint: 1, 1
+
+

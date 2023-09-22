@@ -1,10 +1,10 @@
-from kivy.uix.screenmanager import Screen
-from kivy.uix.recycleview import RecycleView
 import subprocess
 import sys
 
+from kivymd.uix.screen import MDScreen
 
-class HomeScreen(Screen):
+
+class HomeScreen(MDScreen):
     def logout(self):
         self.manager.current = 'login'
 
@@ -17,7 +17,3 @@ class HomeScreen(Screen):
         subprocess.Popen([python_interpreter, 'screens/DataExplorerApp.py'])
 
 
-class RV(RecycleView):
-    def __init__(self, **kwargs):
-        super(RV, self).__init__(**kwargs)
-        self.data = [{'text': f'Instance {i}'} for i in range(1, 4)]
