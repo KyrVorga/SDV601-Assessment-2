@@ -1,8 +1,6 @@
 import PySimpleGUI as sg
 from .register_controller import RegisterController
 from model.user import User
-from model.session import Session
-import bcrypt
 
 
 class LoginController:
@@ -26,18 +24,22 @@ class LoginController:
                 password = values[1]
 
                 user = User.find_by_username(username)
-                # Check if password matches hashed value
-                if bcrypt.checkpw(password.encode("utf-8"), user.password):
-                    sg.popup("Password matches")
-                else:
-                    sg.popup("Invalid username or password")
 
-                # if user and user.password == password:
-                #     session = Session(user._id, "some_token")
-                #     session.save()
-                #     self.window.close()
-                #     # TODO: Open main app window
-                # else:
+                # Check if password matches
+                if user:
+                    if user.is_logged_in == False:
+                        if user.check_password(password):
+                            user.is_logged_in = True
+                            user.save()
+                            sg.popup("Successfully logged in.")
+                            # self.window.close()
+                            return True
+                        else:
+                            sg.popup("Incorrect username or password.")
+                    else:
+                        sg.popup("User already logged in.")
+                else:
+                    sg.popup("User does not exist.")
 
             elif event == "Register":
                 self.window.hide()

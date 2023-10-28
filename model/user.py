@@ -1,44 +1,79 @@
-from datetime import datetime
-# from pymongo import MongoClient
 from .database import Database
 import bcrypt
-
-# client = MongoClient('mongodb://localhost:27017/')
-# db = client['mydatabase']
+import os
+from dotenv import load_dotenv
+from .database import Database
 
 
 class User:
-    db = Database(
-        'mongodb+srv://KyrVorga:Alicization44@cluster0.fittcye.mongodb.net/?retryWrites=true&w=majority')
+    load_dotenv()
 
-    def __init__(self, username, password):
-        password_encoded = password.encode('utf-8')
+    db = Database(os.getenv('MONGO_URI'))
 
-        # Adding the salt to password
-        salt = bcrypt.gensalt()
-        # Hashing the password
-        hashed = bcrypt.hashpw(password_encoded, salt)
+    def __init__(self, username, password, is_logged_in=False):
+        """Initializes a user object"""
+
+        # If the password is not encoded, encode it
+        if type(password) == str:
+            # Encode the password
+            password_encoded = password.encode('utf-8')
+
+            # Add the salt
+            salt = bcrypt.gensalt()
+
+            # Hash the password
+            hashed = bcrypt.hashpw(password_encoded, salt)
+
+            self.password = hashed
+        else:
+            self.password = password
 
         self.username = username
-        self.password = hashed
+        self.is_logged_in = is_logged_in
+
+    def check_password(self, password):
+        '''Checks if the password provided matches the stored one'''
+        try:
+            password_encoded = password.encode('utf-8')
+            return bcrypt.checkpw(password_encoded, self.password)
+
+        except Exception as e:
+            print('PW Check Error:', e)
+            return False
 
     def save(self):
-        users = self.db.get_collection('mydatabase', 'users')
+        """Saves the user to the database"""
+        try:
+            users = self.db.get_collection('mydatabase', 'users')
 
-        user_data = {
-            'username': self.username,
-            'password': self.password,
-            'created_at': datetime.now()
-        }
-        user_id = users.insert_one(user_data).inserted_id
-        self.id = user_id
-        return user_id
+            user = {
+                'username': self.username,
+                'password': self.password,
+                'is_logged_in': self.is_logged_in,
+            }
+
+            users.update_one(
+                {'username': self.username},
+                {'$set': user},
+                upsert=True,
+            )
+
+        except Exception as e:
+            print('Save Error:', e)
+            return False
 
     @classmethod
     def find_by_username(cls, username):
-        users = cls.db.get_collection('mydatabase', 'users')
-        user_data = users.find_one({'username': username})
-        if user_data:
-            return cls(user_data['username'], user_data['password'])
-        else:
-            return None
+        """Returns a user object with the given username"""
+        try:
+            users = cls.db.get_collection('mydatabase', 'users')
+            user = users.find_one({'username': username})
+
+            if user:
+                return cls(user['username'], user['password'], user['is_logged_in'])
+            else:
+                return None
+
+        except Exception as e:
+            print('Find Error:', e)
+            return False
