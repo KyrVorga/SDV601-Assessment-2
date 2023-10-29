@@ -1,50 +1,51 @@
+from view.login_view import LoginView
+from model.session import Session
+from model.user import User
 import PySimpleGUI as sg
 from .register_controller import RegisterController
-from model.user import User
+import sys
+sys.dont_write_bytecode = True
 
 
 class LoginController:
-    def __init__(self):
-        self.layout = [
-            [sg.Text("Username"), sg.InputText()],
-            [sg.Text("Password"), sg.InputText(password_char="*")],
-            [sg.Button("Login"), sg.Button("Cancel")],
-            [sg.Text("Don't have an account? "), sg.Text(
-                "Register", text_color="blue", enable_events=True)]
-        ]
-        self.window = sg.Window("Login", self.layout)
+    def __init__(self, session):
+        self.session = session
+        self.view = LoginView()
 
     def run(self):
-        while True:
-            event, values = self.window.read()
-            if event == sg.WIN_CLOSED or event == "Cancel":
-                break
-            elif event == "Login":
-                username = values[0]
-                password = values[1]
+        try:
+            self.view.is_closed = False
 
-                user = User.find_by_username(username)
+            while True:
+                event, values = self.view.read()
+                if event == sg.WIN_CLOSED or event == "Cancel":
+                    break
+                elif event == "Login":
+                    username = values[0]
+                    password = values[1]
 
-                # Check if password matches
-                if user:
-                    if user.is_logged_in == False:
-                        if user.check_password(password):
-                            user.is_logged_in = True
-                            user.save()
-                            sg.popup("Successfully logged in.")
-                            # self.window.close()
-                            return True
-                        else:
-                            sg.popup("Incorrect username or password.")
+                    # attempt to login
+                    self.session.login(username, password)
+                    self.view.hide()
+
+                    if self.session.logged_in:
+                        # Save the session_id to the enviroment variables
+                        self.session.save_session_id()
+                        self.view.show_message("Login successful")
+                        self.view.close()
+                        break
                     else:
-                        sg.popup("User already logged in.")
-                else:
-                    sg.popup("User does not exist.")
+                        self.view.show_error("Login failed")
+                        self.view.un_hide()
 
-            elif event == "Register":
-                self.window.hide()
-                register_controller = RegisterController()
-                register_controller.run()
-                self.window.un_hide()
+                elif event == "Register":
+                    self.view.hide()
+                    register_controller = RegisterController()
+                    register_controller.run()
+                    self.view.un_hide()
 
-        self.window.close()
+            self.view.close()
+
+        except Exception as e:
+            print(e)
+            self.view.close()
