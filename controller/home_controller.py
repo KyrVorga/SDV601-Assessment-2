@@ -28,6 +28,7 @@ class HomeController:
                         Session.clear_session_id()
                         self.view.close()
                         login_controller = LoginController(self.session)
+                        print("Home - Running login controller")
                         login_controller.run()
                         break
 

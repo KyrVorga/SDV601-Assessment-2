@@ -10,6 +10,7 @@ class Session:
     def __init__(self):
         self.logged_in = False
         self.user = None
+        self.status = None
 
     def login(self, username, password):
         """Attempts to authenticate a user with the given username and password"""
@@ -46,6 +47,7 @@ class Session:
                 self.user.save()
                 self.logged_in = False
                 self.user = None
+                print("Session - Logged in:", self.logged_in)
                 return True
             else:
                 return False
@@ -63,7 +65,9 @@ class Session:
         """Gets the session ID from the environment"""
         try:
             load_dotenv()
-            return os.getenv("SESSION_ID")
+            session_id = os.getenv("SESSION_ID")
+            print("Session - Getting session ID:", session_id)
+            return session_id
         except Exception as e:
             print("Error getting session ID:", e)
             return None
@@ -71,7 +75,7 @@ class Session:
     def save_session_id(self):
         """Saves the session ID to the environment"""
         try:
-            print("Saving session ID")
+            print("Session - Saving session ID")
             with open(".env", "a") as f:
                 f.write(f"SESSION_ID='{self.user.session_id}'\n")
             os.environ["SESSION_ID"] = self.user.session_id

@@ -40,7 +40,8 @@ class LoginController:
 
                 elif event == "Register":
                     self.view.hide()
-                    register_controller = RegisterController()
+                    register_controller = RegisterController(self.session)
+                    print("Login - Running register controller")
                     register_controller.run()
                     self.view.un_hide()
 

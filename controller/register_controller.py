@@ -17,7 +17,7 @@ class RegisterController:
             self.view.is_closed = False
 
             while True:
-                event, values = self.window.read()
+                event, values = self.view.read()
                 if event == sg.WIN_CLOSED or event == "Cancel":
                     break
                 elif event == "Register":
@@ -32,10 +32,10 @@ class RegisterController:
                     user = User(username, password)
                     user.save()
                     sg.popup("Registration successful")
-                    self.window.close()
+                    self.view.close()
 
-            self.window.close()
+            self.view.close()
 
         except Exception as e:
             print(e)
-            self.window.close()
+            self.view.close()

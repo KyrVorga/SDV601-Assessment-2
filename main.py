@@ -12,7 +12,7 @@ load_dotenv()
 
 
 def main():
-    db = Database(os.getenv("MONGO_URI"))
+    # db = Database(os.getenv("MONGO_URI"))
     session = Session()
     session_id = session.get_session_id()
 
@@ -25,6 +25,16 @@ def main():
         if user:
             session.logged_in = True
             session.user = user
+        # Else there isn't a user with the stored session ID
+        else:
+            session.logged_in = False
+            session.user = None
+            session.clear_session_id()
+
+            # Run the login controller
+            login_controller = LoginController(session)
+            print("Main1 - Running login controller")
+            login_controller.run()
 
     # Else there isn't a stored session ID
     else:
@@ -33,22 +43,22 @@ def main():
 
         # Run the login controller
         login_controller = LoginController(session)
+        print("Main2 - Running login controller")
         login_controller.run()
 
-    while True:
-        login_controller = LoginController(session)
+        print("Main3 - Logged in:", session.logged_in)
+
+    # If the user is logged in, run the home controller
+    while session.logged_in:
         home_controller = HomeController(session)
+        print("Main4 - Running home controller")
+        home_controller.run()
+        print("Main5 - Logged in:", session.logged_in)
 
-        if not session.logged_in:
-            login_controller.run()
-            login_controller.view.is_closed = False
-
-        else:
-            home_controller.run()
-            home_controller.view.is_closed = False
-
-        if login_controller.view.is_closed and home_controller.view.is_closed:
-            break
+        # while not session.logged_in:
+        #     home_controller = HomeController(session)
+        #     print("Main6 - Running home controller")
+        #     home_controller.run()
 
     # session.clear_session_id()
     # session.user = None
