@@ -19,6 +19,7 @@ class LoginController:
             while True:
                 event, values = self.view.read()
                 if event == sg.WIN_CLOSED or event == "Cancel":
+                    self.session.status = False
                     break
                 elif event == "Login":
                     username = values[0]
@@ -41,7 +42,7 @@ class LoginController:
                 elif event == "Register":
                     self.view.hide()
                     register_controller = RegisterController(self.session)
-                    print("Login - Running register controller")
+                    # print("Login - Running register controller")
                     register_controller.run()
                     self.view.un_hide()
 

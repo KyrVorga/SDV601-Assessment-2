@@ -10,7 +10,7 @@ class Session:
     def __init__(self):
         self.logged_in = False
         self.user = None
-        self.status = None
+        self.status = True
 
     def login(self, username, password):
         """Attempts to authenticate a user with the given username and password"""

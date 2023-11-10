@@ -6,22 +6,22 @@ sys.dont_write_bytecode = True
 class HomeView():
     """Home view class"""
 
-    def __init__(self):
+    def __init__(self, finalize):
         sg.theme("DarkBlue")
 
         self.layout = [
-            [sg.Text("Welcome to the home page")],
-            [sg.Button("Logout")]
+            [sg.Text("Welcome to the home page"), sg.Button("Logout")],
+            [sg.Listbox(values=[], size=(40, 10), key='-LIST-')],
+            [sg.Button("Load DES"), sg.Button(
+                "New DES"), sg.Button("Delete DES")],
         ]
 
-        self.window = sg.Window("Home", self.layout)
-        self.is_closed = False
+        self.window = sg.Window("Home", self.layout, finalize=finalize)
 
     def read(self):
         return self.window.read()
 
     def close(self):
-        self.is_closed = True
         self.window.close()
 
     def hide(self):

@@ -19,6 +19,7 @@ class RegisterController:
             while True:
                 event, values = self.view.read()
                 if event == sg.WIN_CLOSED or event == "Cancel":
+                    self.session.status = False
                     break
                 elif event == "Register":
                     username = values[0]

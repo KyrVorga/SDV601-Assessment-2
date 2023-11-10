@@ -17,13 +17,11 @@ class RegisterView:
         ]
 
         self.window = sg.Window("Register", self.layout)
-        self.is_closed = False
 
     def read(self):
         return self.window.read()
 
     def close(self):
-        self.is_closed = True
         self.window.close()
 
     def hide(self):
