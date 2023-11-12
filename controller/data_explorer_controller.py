@@ -3,8 +3,8 @@ import PySimpleGUI as sg
 
 
 class DataExplorerController:
-    def __init__(self, session, des):
-        self.session = session
+    def __init__(self, des):
+        # self.username = username
         self.des = des
         self.view = DataExplorerView(self.des.name)
 

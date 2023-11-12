@@ -1,3 +1,5 @@
+import pickle
+import subprocess
 import PySimpleGUI as sg
 from view.home_view import HomeView
 from view.new_des_view import NewDesView
@@ -20,24 +22,17 @@ class HomeController:
             self.session.user.username)
 
         # Convert the cursor to a list of names
-        data_explorers = [des['name'] for des in data_explorers_cursor]
+        data_explorers = []
+        for des in data_explorers_cursor:
+            data_explorers.append(des['name'])
+
+        print("Data Explorers:", data_explorers)
 
         self.view = HomeView(data_explorers)
         self.new_des = NewDesView()
 
     def run(self):
         try:
-
-            # # Fetch all data explorers from the database
-            # data_explorers_cursor = DataExplorer.find_available_des(
-            #     self.session.user.username)
-
-            # # Convert the cursor to a list of names
-            # data_explorers = [des['name'] for des in data_explorers_cursor]
-
-            # # Update the listbox with the data explorers
-            # self.view.window['-LIST-'].update(data_explorers)
-
             while True:
                 event, values = self.view.read()
 
@@ -67,14 +62,13 @@ class HomeController:
                         # Find the DES object with the selected name
                         des = DataExplorer.find_by_name(selected_des)
 
-                        # Create a new Data explorer controller
-                        des_controller = DataExplorerController(
-                            self.session, des)
+                        # Serialize the DES object
+                        with open('des.pkl', 'wb') as f:
+                            pickle.dump(des, f)
 
-                        # Run the Data explorer controller
-                        des_controller.run()
-
-                        break
+                        # Start the Data Explorer application
+                        subprocess.Popen(
+                            ["python", "data_explorer.py"])
 
                     case "New DES":
                         event, values = self.new_des.read()
@@ -114,12 +108,3 @@ class HomeController:
         except Exception as e:
             print(e)
             self.view.close()
-
-    def handle_event(self, event, values):
-        if event == "Load DES":
-            selected_des = values['-LIST-'][0]
-            if selected_des not in self.des_controllers:
-                des = DataExplorer.find_by_name(selected_des)
-                des_controller = DataExplorerController(self.session, des)
-                self.des_controllers[selected_des] = des_controller
-            self.des_controllers[selected_des].view.window.bring_to_front()

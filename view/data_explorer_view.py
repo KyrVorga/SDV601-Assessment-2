@@ -7,7 +7,7 @@ class DataExplorerView:
             [sg.Text('Enter data to explore:'), sg.Input(key='-DATA-')],
             [sg.Button('Explore'), sg.Button('Cancel')]
         ]
-        self.window = sg.Window(name, layout)
+        self.window = sg.Window(name, layout, modal=False, finalize=True)
 
     def read(self):
         return self.window.read()
