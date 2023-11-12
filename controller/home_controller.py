@@ -14,21 +14,29 @@ class HomeController:
 
     def __init__(self, session):
         self.session = session
+
+        # Fetch all data explorers from the database
+        data_explorers_cursor = DataExplorer.find_available_des(
+            self.session.user.username)
+
+        # Convert the cursor to a list of names
+        data_explorers = [des['name'] for des in data_explorers_cursor]
+
+        self.view = HomeView(data_explorers)
         self.new_des = NewDesView()
 
     def run(self):
         try:
-            self.view = HomeView(True)
 
-            # Fetch all data explorers from the database
-            data_explorers_cursor = DataExplorer.find_available_des(
-                self.session.user.username)
+            # # Fetch all data explorers from the database
+            # data_explorers_cursor = DataExplorer.find_available_des(
+            #     self.session.user.username)
 
-            # Convert the cursor to a list of names
-            data_explorers = [de['name'] for de in data_explorers_cursor]
+            # # Convert the cursor to a list of names
+            # data_explorers = [des['name'] for des in data_explorers_cursor]
 
-            # Update the listbox with the data explorers
-            self.view.window['-LIST-'].update(data_explorers)
+            # # Update the listbox with the data explorers
+            # self.view.window['-LIST-'].update(data_explorers)
 
             while True:
                 event, values = self.view.read()
@@ -50,6 +58,9 @@ class HomeController:
 
                     case "Load DES":
                         print("Loading DES")
+                        if len(values['-LIST-']) == 0:
+                            sg.popup_error("You must select a DES first")
+                            break
                         # Get the selected DES name from the list
                         selected_des = values['-LIST-'][0]
 
@@ -103,3 +114,12 @@ class HomeController:
         except Exception as e:
             print(e)
             self.view.close()
+
+    def handle_event(self, event, values):
+        if event == "Load DES":
+            selected_des = values['-LIST-'][0]
+            if selected_des not in self.des_controllers:
+                des = DataExplorer.find_by_name(selected_des)
+                des_controller = DataExplorerController(self.session, des)
+                self.des_controllers[selected_des] = des_controller
+            self.des_controllers[selected_des].view.window.bring_to_front()

@@ -1,3 +1,4 @@
+import PySimpleGUI as sg
 from controller.login_controller import LoginController
 from controller.home_controller import HomeController
 import os
@@ -11,8 +12,45 @@ sys.dont_write_bytecode = True
 load_dotenv()
 
 
-def main():
-    # db = Database(os.getenv("MONGO_URI"))
+class MainController:
+    def __init__(self):
+        self.controllers = {}
+        self.session = Session()
+        self.session_id = self.session.get_session_id()
+
+    def run(self):
+        while True:
+            window, event, values = sg.read_all_windows()
+
+            if event == sg.WIN_CLOSED or event == 'Exit':
+                break
+
+            # Find the controller associated with the window that generated the event
+            active_controller = None
+            for controller in self.controllers.values():
+                if window == controller.view.window:
+                    active_controller = controller
+                    break
+
+            # Handle the event with the active controller
+            if active_controller is not None:
+                active_controller.handle_event(event, values)
+
+        for controller in self.controllers.values():
+            controller.view.close()
+
+    def add_controller(self, name, controller):
+        self.controllers[name] = controller
+
+    def remove_controller(self, name):
+        if name in self.controllers:
+            self.controllers[name].view.close()
+            del self.controllers[name]
+
+
+if __name__ == "__main__":
+    main_controller = MainController()
+
     session = Session()
     session_id = session.get_session_id()
 
@@ -33,8 +71,7 @@ def main():
 
             # Run the login controller
             login_controller = LoginController(session)
-            # print("Main1 - Running login controller")
-            login_controller.run()
+            main_controller.add_controller('login', login_controller)
 
     # Else there isn't a stored session ID
     else:
@@ -43,30 +80,71 @@ def main():
 
         # Run the login controller
         login_controller = LoginController(session)
-        # print("Main2 - Running login controller")
-        login_controller.run()
-
-        # print("Main3 - Logged in:", session.logged_in)
+        main_controller.add_controller('login', login_controller)
 
     home_controller = HomeController(session)
+    main_controller.add_controller('home', home_controller)
 
-    # print("Main3 - Session Status:", session.status)
-    # If the user is logged in, run the home controller
-    while session.status:
-        # print("Main4 - Running home controller")
-        home_controller.run()
-        # print("Main5 - Logged in:", session.logged_in)
-        # print("Main6 - Session Status:", session.status)
-
-        # while not session.logged_in:
-        #     home_controller = HomeController(session)
-        #     print("Main6 - Running home controller")
-        #     home_controller.run()
-
-    # session.clear_session_id()
-    # session.user = None
-    # session.logged_in = False
+    # Run the main controller
+    main_controller.run()
 
 
-if __name__ == "__main__":
-    main()
+# def main():
+#     # db = Database(os.getenv("MONGO_URI"))
+#     session = Session()
+#     session_id = session.get_session_id()
+
+#     # Check if the user's session ID is stored
+#     if session_id:
+#         # Find the user with the stored session ID
+#         user = User.find_by_session_id(session_id)
+
+#         # If the user exists, log them in
+#         if user:
+#             session.logged_in = True
+#             session.user = user
+#         # Else there isn't a user with the stored session ID
+#         else:
+#             session.logged_in = False
+#             session.user = None
+#             session.clear_session_id()
+
+#             # Run the login controller
+#             login_controller = LoginController(session)
+#             # print("Main1 - Running login controller")
+#             login_controller.run()
+
+#     # Else there isn't a stored session ID
+#     else:
+#         session.logged_in = False
+#         session.user = None
+
+#         # Run the login controller
+#         login_controller = LoginController(session)
+#         # print("Main2 - Running login controller")
+#         login_controller.run()
+
+#         # print("Main3 - Logged in:", session.logged_in)
+
+#     home_controller = HomeController(session)
+
+#     # print("Main3 - Session Status:", session.status)
+#     # If the user is logged in, run the home controller
+#     while session.status:
+#         # print("Main4 - Running home controller")
+#         home_controller.run()
+#         # print("Main5 - Logged in:", session.logged_in)
+#         # print("Main6 - Session Status:", session.status)
+
+#         # while not session.logged_in:
+#         #     home_controller = HomeController(session)
+#         #     print("Main6 - Running home controller")
+#         #     home_controller.run()
+
+#     # session.clear_session_id()
+#     # session.user = None
+#     # session.logged_in = False
+
+
+# if __name__ == "__main__":
+#     main()
