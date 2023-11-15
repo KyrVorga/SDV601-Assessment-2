@@ -1,3 +1,4 @@
+import PySimpleGUI as sg
 from controller.data_explorer_controller import DataExplorerController
 import pickle
 

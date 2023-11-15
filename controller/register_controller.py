@@ -18,22 +18,24 @@ class RegisterController:
 
             while True:
                 event, values = self.view.read()
-                if event == sg.WIN_CLOSED or event == "Cancel":
-                    self.session.status = False
-                    break
-                elif event == "Register":
-                    username = values[0]
-                    password = values[1]
+                match event:
+                    case sg.WIN_CLOSED, "Cancel":
+                        self.session.status = False
+                        break
 
-                    # Check if the username is already taken
-                    if User.user_exists(username):
-                        sg.popup_error("Username already taken")
-                        continue
+                    case"Register":
+                        username = values[0]
+                        password = values[1]
 
-                    user = User(username, password)
-                    user.save()
-                    sg.popup("Registration successful")
-                    self.view.close()
+                        # Check if the username is already taken
+                        if User.user_exists(username):
+                            sg.popup_error("Username already taken")
+                            continue
+
+                        user = User(username, password)
+                        user.save()
+                        sg.popup("Registration successful")
+                        self.view.close()
 
             self.view.close()
 

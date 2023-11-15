@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import os
 import uuid
-import bcrypt
 from .database import Database
 import sys
 sys.dont_write_bytecode = True
@@ -47,6 +46,31 @@ class DataExplorer:
 
         except Exception as e:
             print("Data Explorer Save Error:", e)
+
+    def delete(self):
+        """Deletes the data explorer from the database"""
+        try:
+            data_explorers = self.db.get_collection(
+                "mydatabase", "data_explorers")
+
+            data_explorers.delete_one({"des_id": self.des_id})
+
+        except Exception as e:
+            print("Data Explorer Delete Error:", e)
+
+    def toggle_public(self, state):
+        """Makes the data explorer public"""
+        try:
+            data_explorers = self.db.get_collection(
+                "mydatabase", "data_explorers")
+
+            data_explorers.update_one(
+                {"des_id": self.des_id},
+                {"$set": {"is_public": state}}
+            )
+
+        except Exception as e:
+            print("Data Explorer Make Public Error:", e)
 
     @classmethod
     def find_by_des_id(cls, des_id):

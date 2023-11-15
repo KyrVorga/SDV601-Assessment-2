@@ -110,7 +110,6 @@ def main():
 
             # Run the login controller
             login_controller = LoginController(session)
-            # print("Main1 - Running login controller")
             login_controller.run()
 
     # Else there isn't a stored session ID
@@ -120,29 +119,19 @@ def main():
 
         # Run the login controller
         login_controller = LoginController(session)
-        # print("Main2 - Running login controller")
         login_controller.run()
+    print("Main - Session status:", session.status)
+    if session.logged_in:
+        home_controller = HomeController(session)
+        # If the user is logged in, run the home controller
+        print("Starting loop")
+        while session.status:
+            home_controller.run()
+            # home_controller.view.un_hide()
+            # home_controller.create_window()
 
-        # print("Main3 - Logged in:", session.logged_in)
-
-    home_controller = HomeController(session)
-
-    # print("Main3 - Session Status:", session.status)
-    # If the user is logged in, run the home controller
-    while session.status:
-        # print("Main4 - Running home controller")
-        home_controller.run()
-        # print("Main5 - Logged in:", session.logged_in)
-        # print("Main6 - Session Status:", session.status)
-
-        # while not session.logged_in:
-        #     home_controller = HomeController(session)
-        #     print("Main6 - Running home controller")
-        #     home_controller.run()
-
-    # session.clear_session_id()
-    # session.user = None
-    # session.logged_in = False
+        print("Session status:", session.status)
+        print("Exiting")
 
 
 if __name__ == "__main__":

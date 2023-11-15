@@ -17,19 +17,29 @@ class HomeController:
     def __init__(self, session):
         self.session = session
 
+        self.view = HomeView()
+        self.new_des_view = NewDesView()
+
+        # Update the DES list
+        self.update_des_list()
+
+        self.active_data_explorers = {}
+
+    # def create_window(self):
+    #     self.view = HomeView(self.data_explorers)
+    #     self.new_des = NewDesView()
+
+    def update_des_list(self):
         # Fetch all data explorers from the database
         data_explorers_cursor = DataExplorer.find_available_des(
-            self.session.user.username)
+            self.session.user.username) or []
 
         # Convert the cursor to a list of names
-        data_explorers = []
+        self.data_explorers = []
         for des in data_explorers_cursor:
-            data_explorers.append(des['name'])
+            self.data_explorers.append(des['name'])
 
-        print("Data Explorers:", data_explorers)
-
-        self.view = HomeView(data_explorers)
-        self.new_des = NewDesView()
+        self.view.update_des_list(self.data_explorers)
 
     def run(self):
         try:
@@ -38,40 +48,54 @@ class HomeController:
 
                 match event:
                     case sg.WIN_CLOSED:
+                        print(event, values)
                         self.session.status = False
-                        # print("Home - Session Status:", self.session.status)
+                        print("Home - Session Status:", self.session.status)
                         break
 
                     case "Logout":
                         self.session.logout()
                         Session.clear_session_id()
-                        self.view.close()
+                        self.session.status = False
+                        self.view.hide()
                         login_controller = LoginController(self.session)
                         # print("Home - Running login controller")
                         login_controller.run()
-                        break
+
+                        if self.session.logged_in:
+                            self.view.un_hide()
+                            self.session.status = True
+                        else:
+                            self.view.close()
 
                     case "Load DES":
                         print("Loading DES")
                         if len(values['-LIST-']) == 0:
                             sg.popup_error("You must select a DES first")
-                            break
-                        # Get the selected DES name from the list
-                        selected_des = values['-LIST-'][0]
+                        else:
+                            # Get the selected DES name from the list
+                            selected_des = values['-LIST-'][0]
 
-                        # Find the DES object with the selected name
-                        des = DataExplorer.find_by_name(selected_des)
+                            # Find the DES object with the selected name
+                            des = DataExplorer.find_by_name(selected_des)
+                            print("DES:", des)
 
-                        # Serialize the DES object
-                        with open('des.pkl', 'wb') as f:
-                            pickle.dump(des, f)
+                            # Serialize the DES object
+                            with open('des.pkl', 'wb') as f:
+                                pickle.dump(des, f)
 
-                        # Start the Data Explorer application
-                        subprocess.Popen(
-                            ["python", "data_explorer.py"])
+                            # Start the Data Explorer application
+                            process = subprocess.Popen(
+                                [sys.executable, "data_explorer.py"])
+
+                            # Store the subprocess in the dictionary using the DES name as the key
+                            self.active_data_explorers[selected_des] = process
+
+                            print("Active Data Explorers:",
+                                  self.active_data_explorers)
 
                     case "New DES":
-                        event, values = self.new_des.read()
+                        event, values = self.new_des_view.read()
                         print(event, values)
                         if event == "Create":
                             print("Creating new DES")
@@ -84,26 +108,52 @@ class HomeController:
                             # Check if the DES name is already taken
                             if DataExplorer.des_exists(des_name):
                                 sg.popup_error("DES name already taken")
-                                break
+                            else:
+                                # Create the new DES object
+                                new_des = DataExplorer(
+                                    des_name, username, des_id)
 
-                            # Create the new DES object
-                            new_des = DataExplorer(des_name, username, des_id)
+                                # Save the new DES to the database
+                                new_des.save()
 
-                            # Save the new DES to the database
-                            new_des.save()
+                                # Update the DES list
+                                self.des_list = DataExplorer.find_available_des(
+                                    self.session.user.username)
 
-                            # Update the DES list
+                                self.new_des_view.hide()
+
+                        elif event == "Cancel":
+                            self.new_des_view.hide()
+
+                    case "Delete DES":
+                        if len(values['-LIST-']) == 0:
+                            sg.popup_error("You must select a DES first")
+                        else:
+                            # Get the selected DES name from the list
+                            selected_des = values['-LIST-'][0]
+
+                            # Check the active DES list for the selected DES
+                            if selected_des in self.active_data_explorers:
+                                # Kill the process
+                                self.active_data_explorers[selected_des].kill()
+
+                                # Remove the process from the dictionary
+                                del self.active_data_explorers[selected_des]
+
+                            # Find the DES object with the selected name
+                            des = DataExplorer.find_by_name(selected_des)
+
+                            # Delete the DES from the database
+                            des.delete()
+
+                            # Remove the DES from the list
                             self.des_list = DataExplorer.find_available_des(
                                 self.session.user.username)
 
-                            self.new_des.close()
-                            break
-                        elif event == "Cancel":
-                            self.new_des.close()
-                            break
-                        break
+                    case "Update List":
+                        self.update_des_list()
 
-            self.view.close()
+            # self.view.close()
 
         except Exception as e:
             print(e)
