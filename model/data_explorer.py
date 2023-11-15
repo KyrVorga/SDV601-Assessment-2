@@ -47,6 +47,24 @@ class DataExplorer:
         except Exception as e:
             print("Data Explorer Save Error:", e)
 
+    def refresh(self):
+        """Refreshes the data explorer from the database"""
+        try:
+            data_explorers = self.db.get_collection(
+                "mydatabase", "data_explorers")
+
+            data_explorer = data_explorers.find_one({"des_id": self.des_id})
+
+            if data_explorer:
+                self.name = data_explorer["name"]
+                self.username = data_explorer["username"]
+                self.des_id = data_explorer["des_id"]
+                self.data = data_explorer["data"]
+                self.is_public = data_explorer["is_public"]
+
+        except Exception as e:
+            print("Data Explorer Refresh Error:", e)
+
     def delete(self):
         """Deletes the data explorer from the database"""
         try:
