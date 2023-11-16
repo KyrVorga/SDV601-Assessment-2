@@ -37,13 +37,13 @@ class Session:
             print("Login Error:", e)
             return False
 
-    def logout(self):
+    def logout(self, clear_session_id=True):
         """Logs out the user"""
         try:
-            # Implement your logout logic here
             if self.logged_in:
                 self.user.is_logged_in = False
-                self.user.session_id = None
+                if clear_session_id:
+                    self.user.session_id = None
                 self.user.save()
                 self.logged_in = False
                 self.user = None
@@ -53,7 +53,6 @@ class Session:
                 return False
         except Exception as e:
             print("Logout Error:", e)
-            return False
 
     @ staticmethod
     def generate_session_id():
@@ -68,6 +67,7 @@ class Session:
             session_id = os.getenv("SESSION_ID")
             print("Session - Getting session ID:", session_id)
             return session_id
+
         except Exception as e:
             print("Error getting session ID:", e)
             return None

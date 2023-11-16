@@ -68,6 +68,7 @@ class HomeController:
 
                 match event:
                     case sg.WIN_CLOSED:
+                        self.session.logout(False)
                         self.session.status = False
                         thread.join()
                         for process in self.active_data_explorers.values():

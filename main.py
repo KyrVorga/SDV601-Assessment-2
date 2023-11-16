@@ -120,6 +120,7 @@ def main():
         # Run the login controller
         login_controller = LoginController(session)
         login_controller.run()
+
     print("Main - Session status:", session.status)
     if session.logged_in:
         home_controller = HomeController(session)
@@ -129,6 +130,8 @@ def main():
             home_controller.run()
             # home_controller.view.un_hide()
             # home_controller.create_window()
+
+        # session.logout(False)
 
         print("Session status:", session.status)
         print("Exiting")

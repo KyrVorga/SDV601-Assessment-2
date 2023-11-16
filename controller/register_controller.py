@@ -19,7 +19,11 @@ class RegisterController:
             while True:
                 event, values = self.view.read()
                 match event:
-                    case sg.WIN_CLOSED, "Cancel":
+                    case sg.WIN_CLOSED:
+                        self.session.status = False
+                        break
+
+                    case "Cancel":
                         self.session.status = False
                         break
 

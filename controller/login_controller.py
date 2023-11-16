@@ -53,7 +53,7 @@ class LoginController:
                             # break
                         else:
                             self.view.show_error("Login failed")
-                            self.view.hide()
+                            self.view.un_hide()
 
                     case "Register":
                         self.view.hide()
