@@ -1,5 +1,7 @@
+import os
 import pickle
 import subprocess
+import threading
 import PySimpleGUI as sg
 from view.home_view import HomeView
 from view.new_des_view import NewDesView
@@ -7,6 +9,7 @@ from controller.login_controller import LoginController
 from controller.data_explorer_controller import DataExplorerController
 from model.session import Session
 from model.data_explorer import DataExplorer
+from model.database import Database
 import sys
 import uuid
 sys.dont_write_bytecode = True
@@ -14,6 +17,9 @@ sys.dont_write_bytecode = True
 
 class HomeController:
     """Home controller class"""
+
+    collection = Database(os.getenv("MONGO_URI")).get_collection(
+        "mydatabase", "data_explorers")
 
     def __init__(self, session):
         self.session = session
@@ -44,6 +50,13 @@ class HomeController:
 
     def run(self):
         try:
+
+            def watch():
+                self.watch_for_changes()
+
+            thread = threading.Thread(target=watch, daemon=True)
+            thread.start()
+
             while True:
                 # Iterate over a copy of the dictionary items
                 for des_name, process in list(self.active_data_explorers.items()):
@@ -56,6 +69,7 @@ class HomeController:
                 match event:
                     case sg.WIN_CLOSED:
                         self.session.status = False
+                        thread.join()
                         for process in self.active_data_explorers.values():
                             process.terminate()
                         break
@@ -85,22 +99,26 @@ class HomeController:
 
                             # Find the DES object with the selected name
                             des = DataExplorer.find_by_name(selected_des)
-                            print("DES:", des)
 
-                            # Serialize the DES object
-                            with open('des.pkl', 'wb') as f:
-                                pickle.dump(des, f)
+                            # If the DES is not public and the user is not the owner
+                            if not des.is_public and des.username != self.session.user.username:
+                                sg.popup_error(
+                                    "You do not have permission to load this DES")
+                            else:
+                                # Serialize the DES object
+                                with open('des.pkl', 'wb') as f:
+                                    pickle.dump(des, f)
 
-                            # Start the Data Explorer application
-                            process = subprocess.Popen(
-                                [sys.executable, "data_explorer.py"])
+                                # Start the Data Explorer application
+                                process = subprocess.Popen(
+                                    [sys.executable, "data_explorer.py"])
 
-                            # Store the subprocess in the dictionary using a uuid as the key
-                            id = str(uuid.uuid4())
-                            self.active_data_explorers[id] = process
+                                # Store the subprocess in the dictionary using a uuid as the key
+                                id = str(uuid.uuid4())
+                                self.active_data_explorers[id] = process
 
-                            print("Active Data Explorers:",
-                                  self.active_data_explorers)
+                                print("Active Data Explorers:",
+                                      self.active_data_explorers)
 
                     case "New DES":
                         event, values = self.new_des_view.read()
@@ -166,3 +184,22 @@ class HomeController:
         except Exception as e:
             print(e)
             self.view.close()
+
+    def watch_for_changes(self):
+        """
+            Monitors changes in the data_explorer collection
+            and refreshes the Data Explorer if a change is detected,
+            also updates the DES list to reflect the changes.
+        """
+        with self.collection.watch() as stream:
+            for change in stream:
+                print("Operation Type:", change["operationType"])
+                match change["operationType"]:
+                    case "delete":
+                        self.update_des_list()
+
+                    case "insert":
+                        self.update_des_list()
+
+                    case "update":
+                        self.update_des_list()
