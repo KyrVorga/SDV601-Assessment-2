@@ -106,9 +106,13 @@ class HomeController:
                                 sg.popup_error(
                                     "You do not have permission to load this DES")
                             else:
+                                data = {
+                                    "des": des,
+                                    "username": self.session.user.username,
+                                }
                                 # Serialize the DES object
                                 with open('des.pkl', 'wb') as f:
-                                    pickle.dump(des, f)
+                                    pickle.dump(data, f)
 
                                 # Start the Data Explorer application
                                 process = subprocess.Popen(

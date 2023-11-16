@@ -1,6 +1,7 @@
 import os
 from model.database import Database
 from view.data_explorer_view import DataExplorerView
+from view.data_explorer_public_view import DataExplorerPublicView
 import PySimpleGUI as sg
 import threading
 
@@ -10,10 +11,13 @@ class DataExplorerController:
     collection = Database(os.getenv("MONGO_URI")).get_collection(
         "mydatabase", "data_explorers")
 
-    def __init__(self, des):
-        # self.username = username
+    def __init__(self, des, username):
+        self.username = username
         self.des = des
-        self.view = DataExplorerView(self.des.name, self.des.is_public)
+        if self.des.username != self.username:
+            self.view = DataExplorerPublicView(self.des.name)
+        else:
+            self.view = DataExplorerView(self.des.name, self.des.is_public)
 
     def run(self):
 
