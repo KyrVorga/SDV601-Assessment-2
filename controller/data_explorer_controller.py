@@ -20,7 +20,7 @@ class DataExplorerController:
         def watch():
             self.watch_for_changes()
 
-        thread = threading.Thread(target=watch)
+        thread = threading.Thread(target=watch, daemon=True)
         thread.start()
 
         while True:
@@ -28,7 +28,8 @@ class DataExplorerController:
             print(event, values)
             match event:
                 case sg.WIN_CLOSED:
-                    break
+                    thread.join()
+                    os._exit(0)
 
                 case "Cancel":
                     break
@@ -43,6 +44,8 @@ class DataExplorerController:
                     # Add your data exploration logic here
 
         self.view.close()
+        thread.join()
+        raise SystemExit
 
     def watch_for_changes(self):
         """
@@ -52,8 +55,21 @@ class DataExplorerController:
         """
         with self.collection.watch() as stream:
             for change in stream:
-                # if change["documentKey"]["des_id"] == self.des.des_id:
-                #     self.des.refresh()
-                #     self.view.update(self.des.name, self.des.is_public)
-                print("Change:", change)
-                self.des.refresh()
+                print(self.des._id, change["documentKey"]["_id"])
+                if change["documentKey"]["_id"] == self.des._id:
+                    print(self.des)
+                    self.des.refresh()
+                    print(self.des)
+                    print("Operation Type:", change["operationType"])
+                    match change["operationType"]:
+                        case "delete":
+                            self.view.close()
+                            os._exit(0)
+
+                        case "update":
+                            print("Updated Fields:",
+                                  change["updateDescription"]["updatedFields"])
+                            if "is_public" in change["updateDescription"]["updatedFields"]:
+                                self.des.is_public = change["updateDescription"]["updatedFields"]["is_public"]
+                                print("Public State:", self.des.is_public)
+                                self.view.public_state = self.des.is_public

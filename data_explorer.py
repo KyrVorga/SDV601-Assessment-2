@@ -1,3 +1,4 @@
+import os
 import PySimpleGUI as sg
 from controller.data_explorer_controller import DataExplorerController
 import pickle
@@ -18,3 +19,5 @@ if __name__ == "__main__":
         des = pickle.load(f)
 
     run_des_controller(des)
+
+    raise SystemExit

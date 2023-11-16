@@ -12,15 +12,11 @@ class DataExplorer:
 
     db = Database(os.getenv("MONGO_URI"))
 
-    def __init__(self, name, username, des_id=None, data=None, is_public=False):
+    def __init__(self, name, username, _id=None, data=None, is_public=False):
         """Initializes a user object"""
-
+        self._id = _id
         self.name = name
         self.username = username
-        if des_id == None:
-            self.des_id = self.generate_des_id()
-            print("Data Explorer ID:", self.des_id)
-        self.des_id = des_id
         self.data = data
         self.is_public = is_public
 
@@ -33,13 +29,12 @@ class DataExplorer:
             data_explorer = {
                 "name": self.name,
                 "username": self.username,
-                "des_id": self.des_id,
                 "data": self.data,
                 "is_public": self.is_public,
             }
             print("Data Explorer Save:", data_explorer)
             data_explorers.update_one(
-                {"des_id": self.des_id},
+                {"_id": self._id},
                 {"$set": data_explorer},
                 upsert=True
             )
@@ -53,12 +48,11 @@ class DataExplorer:
             data_explorers = self.db.get_collection(
                 "mydatabase", "data_explorers")
 
-            data_explorer = data_explorers.find_one({"des_id": self.des_id})
+            data_explorer = data_explorers.find_one({"_id": self._id})
 
             if data_explorer:
                 self.name = data_explorer["name"]
                 self.username = data_explorer["username"]
-                self.des_id = data_explorer["des_id"]
                 self.data = data_explorer["data"]
                 self.is_public = data_explorer["is_public"]
 
@@ -71,7 +65,7 @@ class DataExplorer:
             data_explorers = self.db.get_collection(
                 "mydatabase", "data_explorers")
 
-            data_explorers.delete_one({"des_id": self.des_id})
+            data_explorers.delete_one({"_id": self._id})
 
         except Exception as e:
             print("Data Explorer Delete Error:", e)
@@ -83,7 +77,7 @@ class DataExplorer:
                 "mydatabase", "data_explorers")
 
             data_explorers.update_one(
-                {"des_id": self.des_id},
+                {"_id": self._id},
                 {"$set": {"is_public": state}}
             )
 
@@ -91,19 +85,19 @@ class DataExplorer:
             print("Data Explorer Make Public Error:", e)
 
     @classmethod
-    def find_by_des_id(cls, des_id):
-        """Finds a data explorer by its des_id"""
+    def find_by_des_id(cls, _id):
+        """Finds a data explorer by its _id"""
         try:
             data_explorers = cls.db.get_collection(
                 "mydatabase", "data_explorers")
 
-            data_explorer = data_explorers.find_one({"des_id": des_id})
+            data_explorer = data_explorers.find_one({"_id": _id})
 
             if data_explorer:
                 return cls(
                     name=data_explorer["name"],
                     username=data_explorer["username"],
-                    des_id=data_explorer["des_id"],
+                    _id=data_explorer["_id"],
                     data=data_explorer["data"],
                     is_public=data_explorer["is_public"]
                 )
@@ -127,7 +121,7 @@ class DataExplorer:
                 return cls(
                     name=data_explorer["name"],
                     username=data_explorer["username"],
-                    des_id=data_explorer["des_id"],
+                    _id=data_explorer["_id"],
                     data=data_explorer["data"],
                     is_public=data_explorer["is_public"]
                 )
@@ -175,7 +169,5 @@ class DataExplorer:
             print("Data Explorer Find Error:", e)
             return None
 
-    @staticmethod
-    def generate_des_id():
-        """Generates a unique des_id"""
-        return str(uuid.uuid4())
+    def __str__(self) -> str:
+        return f"Data Explorer: {self.name} User:{self.username} ID:{self._id} Data:{self.data} Public:{self.is_public}"

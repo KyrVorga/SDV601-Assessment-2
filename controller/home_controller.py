@@ -8,6 +8,7 @@ from controller.data_explorer_controller import DataExplorerController
 from model.session import Session
 from model.data_explorer import DataExplorer
 import sys
+import uuid
 sys.dont_write_bytecode = True
 
 
@@ -44,13 +45,19 @@ class HomeController:
     def run(self):
         try:
             while True:
+                # Iterate over a copy of the dictionary items
+                for des_name, process in list(self.active_data_explorers.items()):
+                    if process.poll() is not None:
+                        # The process has terminated, so remove it from the dictionary
+                        del self.active_data_explorers[des_name]
+
                 event, values = self.view.read()
 
                 match event:
                     case sg.WIN_CLOSED:
-                        print(event, values)
                         self.session.status = False
-                        print("Home - Session Status:", self.session.status)
+                        for process in self.active_data_explorers.values():
+                            process.terminate()
                         break
 
                     case "Logout":
@@ -88,8 +95,9 @@ class HomeController:
                             process = subprocess.Popen(
                                 [sys.executable, "data_explorer.py"])
 
-                            # Store the subprocess in the dictionary using the DES name as the key
-                            self.active_data_explorers[selected_des] = process
+                            # Store the subprocess in the dictionary using a uuid as the key
+                            id = str(uuid.uuid4())
+                            self.active_data_explorers[id] = process
 
                             print("Active Data Explorers:",
                                   self.active_data_explorers)
@@ -103,7 +111,7 @@ class HomeController:
                             # Define the fields of the new DES
                             des_name = values["-NAME-"]
                             username = self.session.user.username
-                            des_id = DataExplorer.generate_des_id()
+                            # des_id = DataExplorer.generate_des_id()
 
                             # Check if the DES name is already taken
                             if DataExplorer.des_exists(des_name):
@@ -111,7 +119,7 @@ class HomeController:
                             else:
                                 # Create the new DES object
                                 new_des = DataExplorer(
-                                    des_name, username, des_id)
+                                    des_name, username)  # , des_id)
 
                                 # Save the new DES to the database
                                 new_des.save()
