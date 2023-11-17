@@ -1,5 +1,6 @@
 import os
 from model.database import Database
+from view.data_explorer_public_view import DataExplorerPublicView
 from view.data_explorer_view import DataExplorerView
 import PySimpleGUI as sg
 import threading
@@ -10,10 +11,15 @@ class DataExplorerController:
     collection = Database(os.getenv("MONGO_URI")).get_collection(
         "mydatabase", "data_explorers")
 
-    def __init__(self, des):
-        # self.username = username
+    def __init__(self, des, username):
+        self.username = username
         self.des = des
-        self.view = DataExplorerView(self.des.name, self.des.is_public)
+        if self.username != self.des.username:
+            self.view = DataExplorerPublicView(self.des.name)
+            self.is_owner = False
+        else:
+            self.view = DataExplorerView(self.des.name, self.des.is_public)
+            self.is_owner = True
 
     def run(self):
 
@@ -28,7 +34,7 @@ class DataExplorerController:
             print(event, values)
             match event:
                 case sg.WIN_CLOSED:
-                    thread.join()
+                    # thread.join()
                     os._exit(0)
 
                 case "Cancel":
@@ -70,6 +76,12 @@ class DataExplorerController:
                             print("Updated Fields:",
                                   change["updateDescription"]["updatedFields"])
                             if "is_public" in change["updateDescription"]["updatedFields"]:
-                                self.des.is_public = change["updateDescription"]["updatedFields"]["is_public"]
-                                print("Public State:", self.des.is_public)
-                                self.view.public_state = self.des.is_public
+                                if self.is_owner == False:
+                                    # Kill the entire process
+                                    self.view.close()
+                                    os._exit(0)
+
+                                else:
+                                    self.des.is_public = change["updateDescription"]["updatedFields"]["is_public"]
+                                    print("Public State:", self.des.is_public)
+                                    self.view.public_state = self.des.is_public

@@ -14,7 +14,7 @@ class RegisterController:
 
     def run(self):
         try:
-            self.view.is_closed = False
+            # self.view.is_closed = False
 
             while True:
                 event, values = self.view.read()
@@ -35,10 +35,10 @@ class RegisterController:
                         user = User(username, password)
                         user.save()
                         sg.popup("Registration successful")
-                        self.view.close()
+                        self.view.hide()
 
-            self.view.close()
+            self.view.hide()
 
         except Exception as e:
             print(e)
-            self.view.close()
+            self.view.hide()

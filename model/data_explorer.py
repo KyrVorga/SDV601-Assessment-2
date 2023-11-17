@@ -14,7 +14,7 @@ class DataExplorer:
 
     def __init__(self, name, username, _id=None, data=None, is_public=False):
         """Initializes a user object"""
-        self._id = _id
+        self._id = _id if _id else uuid.uuid4().hex
         self.name = name
         self.username = username
         self.data = data
@@ -33,11 +33,12 @@ class DataExplorer:
                 "is_public": self.is_public,
             }
             print("Data Explorer Save:", data_explorer)
-            data_explorers.update_one(
+            result = data_explorers.update_one(
                 {"_id": self._id},
                 {"$set": data_explorer},
                 upsert=True
             )
+            print("Data Explorer Save Result:", result)
 
         except Exception as e:
             print("Data Explorer Save Error:", e)
