@@ -25,7 +25,7 @@ class HomeController:
         self.session = session
 
         self.view = HomeView()
-        self.new_des_view = NewDesView()
+        # self.new_des_view = NewDesView()
 
         # Update the DES list
         self.update_des_list()
@@ -70,7 +70,7 @@ class HomeController:
                     case sg.WIN_CLOSED:
                         self.session.logout(False)
                         self.session.status = False
-                        thread.join()
+                        # thread.join()
                         for process in self.active_data_explorers.values():
                             process.terminate()
                         break
@@ -107,11 +107,11 @@ class HomeController:
                                     "You do not have permission to load this DES")
                             else:
                                 data = {
-                                    "des": des,
                                     "username": self.session.user.username,
+                                    "des": des
                                 }
-                                # Serialize the DES object
-                                with open('des.pkl', 'wb') as f:
+                                # Serialize the data object
+                                with open('data.pkl', 'wb') as f:
                                     pickle.dump(data, f)
 
                                 # Start the Data Explorer application
@@ -126,11 +126,11 @@ class HomeController:
                                       self.active_data_explorers)
 
                     case "New DES":
-                        event, values = self.new_des_view.read()
+                        new_des_view = NewDesView()
+                        event, values = new_des_view.read()
                         print(event, values)
                         if event == "Create":
                             print("Creating new DES")
-
                             # Define the fields of the new DES
                             des_name = values["-NAME-"]
                             username = self.session.user.username
@@ -143,7 +143,7 @@ class HomeController:
                                 # Create the new DES object
                                 new_des = DataExplorer(
                                     des_name, username)  # , des_id)
-
+                                print(new_des)
                                 # Save the new DES to the database
                                 new_des.save()
 
@@ -151,10 +151,10 @@ class HomeController:
                                 self.des_list = DataExplorer.find_available_des(
                                     self.session.user.username)
 
-                                self.new_des_view.hide()
+                                new_des_view.close()
 
                         elif event == "Cancel":
-                            self.new_des_view.hide()
+                            new_des_view.close()
 
                     case "Delete DES":
                         if len(values['-LIST-']) == 0:

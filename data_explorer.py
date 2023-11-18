@@ -5,8 +5,8 @@ import pickle
 
 
 def run_des_controller(data):
+    """Run the data explorer controller"""
 
-    # Get the DES object from the data dictionary
     des = data["des"]
     username = data["username"]
 
@@ -19,7 +19,7 @@ def run_des_controller(data):
 
 if __name__ == "__main__":
     # Load the pickled DES object from a file
-    with open('des.pkl', 'rb') as f:
+    with open('data.pkl', 'rb') as f:
         data = pickle.load(f)
 
     run_des_controller(data)

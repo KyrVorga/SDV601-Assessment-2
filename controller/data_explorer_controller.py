@@ -1,5 +1,6 @@
 import os
 from model.database import Database
+from view.data_explorer_public_view import DataExplorerPublicView
 from view.data_explorer_view import DataExplorerView
 from view.data_explorer_public_view import DataExplorerPublicView
 import PySimpleGUI as sg
@@ -14,10 +15,12 @@ class DataExplorerController:
     def __init__(self, des, username):
         self.username = username
         self.des = des
-        if self.des.username != self.username:
+        if self.username != self.des.username:
             self.view = DataExplorerPublicView(self.des.name)
+            self.is_owner = False
         else:
             self.view = DataExplorerView(self.des.name, self.des.is_public)
+            self.is_owner = True
 
     def run(self):
 
@@ -32,7 +35,7 @@ class DataExplorerController:
             print(event, values)
             match event:
                 case sg.WIN_CLOSED:
-                    thread.join()
+                    # thread.join()
                     os._exit(0)
 
                 case "Cancel":
@@ -74,6 +77,12 @@ class DataExplorerController:
                             print("Updated Fields:",
                                   change["updateDescription"]["updatedFields"])
                             if "is_public" in change["updateDescription"]["updatedFields"]:
-                                self.des.is_public = change["updateDescription"]["updatedFields"]["is_public"]
-                                print("Public State:", self.des.is_public)
-                                self.view.public_state = self.des.is_public
+                                if self.is_owner == False:
+                                    # Kill the entire process
+                                    self.view.close()
+                                    os._exit(0)
+
+                                else:
+                                    self.des.is_public = change["updateDescription"]["updatedFields"]["is_public"]
+                                    print("Public State:", self.des.is_public)
+                                    self.view.public_state = self.des.is_public
