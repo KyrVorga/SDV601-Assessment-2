@@ -19,7 +19,8 @@ class DataExplorerView:
         explorer_layout = [
             [sg.Button('Manage Data Source'), sg.Button('Chart Settings'),
              sg.Checkbox('Make Public', key='-PUBLIC-', enable_events=True, default=public_state)],
-            [sg.Canvas(size=(40, 40), key='-CANVAS-')]
+            [sg.Canvas(size=(40, 40), key='-CANVAS-')],
+            [sg.Canvas(size=(40, 5), key='-CANVAS_TOOLS-')],
         ]
 
         layout = [

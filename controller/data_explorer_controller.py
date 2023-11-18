@@ -1,4 +1,11 @@
 import os
+import matplotlib.pyplot as plt
+import matplotlib
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import tkinter as tk
+
+import pandas as pd
+from model.data_source import DataSource
 from model.database import Database
 from view.data_explorer_public_view import DataExplorerPublicView
 from view.data_explorer_view import DataExplorerView
@@ -7,6 +14,8 @@ from controller.data_source_controller import DataSourceController
 import PySimpleGUI as sg
 import threading
 from datetime import datetime
+
+matplotlib.use('TkAgg')
 
 
 class DataExplorerController:
@@ -33,6 +42,29 @@ class DataExplorerController:
 
         thread = threading.Thread(target=watch, daemon=True)
         thread.start()
+
+        if self.des.data:
+            data_source = DataSource.find_by_name(self.des.data)
+            print("DES Data:", type(data_source), data_source)
+            if data_source:
+                # Assuming data_source_data is a list of dictionaries
+                data_source_data = pd.DataFrame(data_source.data)
+
+                # Create a new matplotlib figure and a subplot
+                fig, ax = plt.subplots()
+
+                # Plot the data on the subplot
+                self.plot_data(data_source_data, ax)
+
+                # Add the plot to the sg.Canvas element
+                canvas_elem = self.view.window['-CANVAS-']
+                canvas = canvas_elem.TKCanvas
+
+                # Add the toolbar to the sg.Canvas element
+                toolbar_canvas_elem = self.view.window['-CANVAS_TOOLS-']
+                toolbar_canvas = toolbar_canvas_elem.TKCanvas
+
+                self.draw_figure(self.view.window, canvas, toolbar_canvas, fig)
 
         while True:
             event, values = self.view.read()
@@ -102,3 +134,21 @@ class DataExplorerController:
                                 for message in self.des.chat:
                                     chat += message + '\n'
                                 self.view.window["-OUTPUT-"].update(chat)
+
+    def draw_figure(self, window, canvas, toolbar_canvas, figure):
+        # if window['-CANVAS-'].Widget is not None:
+        #     window['-CANVAS-'].Widget.pack_forget()
+        # if window['-CANVAS_TOOLS-'].Widget is not None:
+        #     window['-CANVAS_TOOLS-'].Widget.pack_forget()
+        figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+        figure_canvas_agg.draw()
+        toolbar = NavigationToolbar2Tk(figure_canvas_agg, toolbar_canvas)
+        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+        return figure_canvas_agg, toolbar
+
+    def plot_data(self, data, ax):
+        # Clear the previous plot
+        ax.clear()
+
+        # Plot the data on the subplot
+        data.plot(kind='line', ax=ax)

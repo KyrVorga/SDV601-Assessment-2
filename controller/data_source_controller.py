@@ -74,17 +74,17 @@ class DataSourceController:
                     case "insert":
                         self.update_data_source_list()
                         self.view.update_data_sources(
-                            self.des.data_sources)
+                            self.available_data_sources)
 
                     case "delete":
                         self.update_data_source_list()
                         self.view.update_data_sources(
-                            self.des.data_sources)
+                            self.available_data_sources)
 
                     case "update":
                         self.update_data_source_list()
                         self.view.update_data_sources(
-                            self.des.data_sources)
+                            self.available_data_sources)
 
     def open_data_source_modal(self):
         layout = [
@@ -103,32 +103,39 @@ class DataSourceController:
                 data_source_name = values["-NAME-"]
                 data_source_data_path_or_url = values["-DATA-"]
 
-                if os.path.isfile(data_source_data_path_or_url):
-                    # If it's a local file, read it directly
-                    try:
-                        data_source_data = pandas.read_csv(
-                            data_source_data_path_or_url)
-                    except Exception as e:
-                        print(f"Error reading local file: {e}")
-                        return None, None
+                # Check if the data source value is empty
+                if not data_source_data_path_or_url or not data_source_name:
+                    sg.popup_error("Both fields must be provided")
+                    continue
+
                 else:
-                    # If it's a URL, download it first
-                    try:
-                        response = requests.get(data_source_data_path_or_url)
-                        response.raise_for_status()  # Raise an exception if the download failed
-                        data_source_data = pandas.read_csv(
-                            io.StringIO(response.text))
-                    except Exception as e:
-                        print(
-                            f"Error downloading or reading file from URL: {e}")
-                        return None, None
+                    if os.path.isfile(data_source_data_path_or_url):
+                        # If it's a local file, read it directly
+                        try:
+                            data_source_data = pandas.read_csv(
+                                data_source_data_path_or_url)
+                        except Exception as e:
+                            print(f"Error reading local file: {e}")
+                            return None, None
+                    else:
+                        # If it's a URL, download it first
+                        try:
+                            response = requests.get(
+                                data_source_data_path_or_url)
+                            response.raise_for_status()  # Raise an exception if the download failed
+                            data_source_data = pandas.read_csv(
+                                io.StringIO(response.text))
+                        except Exception as e:
+                            print(
+                                f"Error downloading or reading file from URL: {e}")
+                            return None, None
 
-                window.close()
+                    window.close()
 
-                # Convert the DataFrame to a list of dictionaries
-                data_source_data = data_source_data.to_dict("records")
+                    # Convert the DataFrame to a list of dictionaries
+                    data_source_data = data_source_data.to_dict("records")
 
-                return data_source_name, data_source_data
+                    return data_source_name, data_source_data
             elif event == "Cancel" or event == sg.WIN_CLOSED:
                 window.close()
                 return None, None
