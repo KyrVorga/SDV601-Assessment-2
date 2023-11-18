@@ -18,8 +18,8 @@ sys.dont_write_bytecode = True
 class HomeController:
     """Home controller class"""
 
-    collection = Database(os.getenv("MONGO_URI")).get_collection(
-        "mydatabase", "data_explorers")
+    db = Database.getInstance()
+    collection = db.get_collection("data_sources")
 
     def __init__(self, session):
         self.session = session

@@ -3,6 +3,7 @@ from model.database import Database
 from view.data_explorer_public_view import DataExplorerPublicView
 from view.data_explorer_view import DataExplorerView
 from view.data_explorer_public_view import DataExplorerPublicView
+from controller.data_source_controller import DataSourceController
 import PySimpleGUI as sg
 import threading
 from datetime import datetime
@@ -10,8 +11,8 @@ from datetime import datetime
 
 class DataExplorerController:
 
-    collection = Database(os.getenv("MONGO_URI")).get_collection(
-        "mydatabase", "data_explorers")
+    db = Database.getInstance()
+    collection = db.get_collection("data_sources")
 
     def __init__(self, des, username):
         self.username = username
@@ -48,10 +49,6 @@ class DataExplorerController:
                     print("State:", state)
                     self.des.toggle_public(state)
 
-                case "Explore":
-                    data = values[0]
-                    # Add your data exploration logic here
-
                 case "Send":
                     text = values["-CHAT-"]
 
@@ -62,9 +59,9 @@ class DataExplorerController:
                     self.des.chat.append(message)
                     self.des.save()
 
-        # self.view.close()
-        # thread.join()
-        # raise SystemExit
+                case "Manage Data Source":
+                    data_source_controller = DataSourceController(self.des)
+                    data_source_controller.run()
 
     def watch_for_changes(self):
         """

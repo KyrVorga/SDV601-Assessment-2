@@ -10,7 +10,7 @@ load_dotenv()
 
 class User:
 
-    db = Database(os.getenv("MONGO_URI"))
+    db = Database.getInstance()
 
     def __init__(self, username, password, is_logged_in=False, session_id=None):
         """Initializes a user object"""
@@ -47,7 +47,7 @@ class User:
     def save(self):
         """Saves the user to the database"""
         try:
-            users = self.db.get_collection("mydatabase", "users")
+            users = self.db.get_collection("users")
 
             user = {
                 "username": self.username,
@@ -70,7 +70,7 @@ class User:
     def find_by_username(cls, username):
         """Returns a user object with the given username"""
         try:
-            users = cls.db.get_collection("mydatabase", "users")
+            users = cls.db.get_collection("users")
             user = users.find_one({"username": username})
 
             if user:
@@ -86,7 +86,7 @@ class User:
     def find_by_session_id(cls, session_id):
         """Returns a user object with the given session_id"""
         try:
-            users = cls.db.get_collection("mydatabase", "users")
+            users = cls.db.get_collection("users")
             user = users.find_one({"session_id": session_id})
 
             if user:
@@ -102,7 +102,7 @@ class User:
     def user_exists(cls, username):
         """Returns true if a user with the given username exists"""
         try:
-            users = cls.db.get_collection("mydatabase", "users")
+            users = cls.db.get_collection("users")
             user = users.find_one({"username": username})
 
             if user:

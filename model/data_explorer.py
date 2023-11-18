@@ -10,10 +10,10 @@ load_dotenv()
 
 class DataExplorer:
 
-    db = Database(os.getenv("MONGO_URI"))
+    db = Database.getInstance()
 
     def __init__(self, name, username, _id=None, data=None, is_public=False, chat=None):
-        """Initializes a user object"""
+        """Initializes a DES object"""
         self._id = _id if _id else uuid.uuid4().hex
         self.name = name
         self.username = username
@@ -24,8 +24,7 @@ class DataExplorer:
     def save(self):
         """Saves the data explorer to the database"""
         try:
-            data_explorers = self.db.get_collection(
-                "mydatabase", "data_explorers")
+            data_explorers = self.db.get_collection("data_explorers")
 
             data_explorer = {
                 "name": self.name,
@@ -48,8 +47,7 @@ class DataExplorer:
     def refresh(self):
         """Refreshes the data explorer from the database"""
         try:
-            data_explorers = self.db.get_collection(
-                "mydatabase", "data_explorers")
+            data_explorers = self.db.get_collection("data_explorers")
 
             data_explorer = data_explorers.find_one({"_id": self._id})
 
@@ -66,8 +64,7 @@ class DataExplorer:
     def delete(self):
         """Deletes the data explorer from the database"""
         try:
-            data_explorers = self.db.get_collection(
-                "mydatabase", "data_explorers")
+            data_explorers = self.db.get_collection("data_explorers")
 
             data_explorers.delete_one({"_id": self._id})
 
@@ -92,8 +89,7 @@ class DataExplorer:
     def find_by_des_id(cls, _id):
         """Finds a data explorer by its _id"""
         try:
-            data_explorers = cls.db.get_collection(
-                "mydatabase", "data_explorers")
+            data_explorers = cls.db.get_collection("data_explorers")
 
             data_explorer = data_explorers.find_one({"_id": _id})
 
@@ -117,8 +113,7 @@ class DataExplorer:
     def find_by_name(cls, name):
         """Finds a data explorer by its name"""
         try:
-            data_explorers = cls.db.get_collection(
-                "mydatabase", "data_explorers")
+            data_explorers = cls.db.get_collection("data_explorers")
 
             data_explorer = data_explorers.find_one({"name": name})
 
@@ -142,8 +137,7 @@ class DataExplorer:
     def find_available_des(cls, username):
         """Finds all data explorers that are available to the user"""
         try:
-            data_explorers = cls.db.get_collection(
-                "mydatabase", "data_explorers")
+            data_explorers = cls.db.get_collection("data_explorers")
 
             available_des = data_explorers.find(
                 {"$or": [{"username": username}, {"is_public": True}]})
@@ -161,8 +155,7 @@ class DataExplorer:
     def des_exists(cls, des_name):
         """Checks if a data explorer exists"""
         try:
-            data_explorers = cls.db.get_collection(
-                "mydatabase", "data_explorers")
+            data_explorers = cls.db.get_collection("data_explorers")
 
             data_explorer = data_explorers.find_one({"name": des_name})
 

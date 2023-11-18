@@ -1,14 +1,15 @@
 import PySimpleGUI as sg
 
 
-class NewDesView:
-    def __init__(self):
+class DataSourceManagerView:
+    def __init__(self, data_sources=[]):
         layout = [
-            [sg.Text('Enter the name of the new DES:'),
-             sg.Input(key='-NAME-')],
-            [sg.Button('Create', bind_return_key=True), sg.Button('Cancel')]
+            [sg.Text('Data Sources')],
+            [sg.Listbox(values=data_sources, size=(30, 6),
+                        key='-DATA_SOURCES-', enable_events=True)],
+            [sg.Button('Add'), sg.Button('Delete')]
         ]
-        self.window = sg.Window('New DES', layout)
+        self.window = sg.Window('Data Source Manager', layout)
 
     def read(self):
         return self.window.read()

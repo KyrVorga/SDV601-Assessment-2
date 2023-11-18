@@ -17,9 +17,9 @@ class DataExplorerView:
         ]
 
         explorer_layout = [
-            [sg.Text('Enter data to explore:'), sg.Input(key='-DATA-')],
-            [sg.Button('Explore'), sg.Button('Cancel'),
-             sg.Checkbox('Make Public', key='-PUBLIC-', enable_events=True, default=public_state)]
+            [sg.Button('Manage Data Source'), sg.Button('Chart Settings'),
+             sg.Checkbox('Make Public', key='-PUBLIC-', enable_events=True, default=public_state)],
+            [sg.Canvas(size=(40, 40), key='-CANVAS-')]
         ]
 
         layout = [
