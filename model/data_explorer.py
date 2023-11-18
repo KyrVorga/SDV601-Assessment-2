@@ -74,8 +74,7 @@ class DataExplorer:
     def toggle_public(self, state):
         """Makes the data explorer public"""
         try:
-            data_explorers = self.db.get_collection(
-                "mydatabase", "data_explorers")
+            data_explorers = self.db.get_collection("data_explorers")
 
             data_explorers.update_one(
                 {"_id": self._id},

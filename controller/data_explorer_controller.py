@@ -18,11 +18,12 @@ class DataExplorerController:
         self.username = username
         self.des = des
         if self.username != self.des.username:
-            self.view = DataExplorerPublicView(self.des.name, self.des.chat)
+            self.view = DataExplorerPublicView(
+                self.des.name, self.des.data, self.des.chat)
             self.is_owner = False
         else:
             self.view = DataExplorerView(
-                self.des.name, self.des.chat, self.des.is_public)
+                self.des.name, self.des.data, self.des.chat, self.des.is_public)
             self.is_owner = True
 
     def run(self):

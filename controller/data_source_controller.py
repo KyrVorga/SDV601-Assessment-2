@@ -16,6 +16,7 @@ class DataSourceController:
     def __init__(self, des):
         self.des = des
         self.view = DataSourceManagerView()
+        self.update_data_source_list()
 
     def run(self):
         def watch():
@@ -45,20 +46,19 @@ class DataSourceController:
                     # Save the data source
                     data_source.save()
 
-                    # Update the user's data sources
-                    self.des.data_source = data_source._id
+                    # Update the des's data sources
+                    self.des.data = data_source.name
                     self.des.save()
-
-                    # Update the view to reflect the changes
-                    self.view.update_data_sources(self.des.data_sources)
-                    self.view.clear_input()
 
                 case "Delete":
-                    data_source_id = values["-DATA_SOURCES-"][0]
-                    self.des.data_sources.remove(data_source_id)
+                    data_source_name = values["-DATA_SOURCES-"][0]
+                    DataSource.find_by_name(data_source_name).delete()
+                    # self.des.save()
+
+                case "Load":
+                    data_source_name = values["-DATA_SOURCES-"][0]
+                    self.des.data = data_source_name
                     self.des.save()
-                    self.view.update_data_sources(self.des.data_sources)
-                    self.view.clear_input()
 
     def watch_for_changes(self):
         """
@@ -69,6 +69,22 @@ class DataSourceController:
         with self.collection.watch() as stream:
             for change in stream:
                 print(self.des._id, change["documentKey"]["_id"])
+
+                match change["operationType"]:
+                    case "insert":
+                        self.update_data_source_list()
+                        self.view.update_data_sources(
+                            self.des.data_sources)
+
+                    case "delete":
+                        self.update_data_source_list()
+                        self.view.update_data_sources(
+                            self.des.data_sources)
+
+                    case "update":
+                        self.update_data_source_list()
+                        self.view.update_data_sources(
+                            self.des.data_sources)
 
     def open_data_source_modal(self):
         layout = [
@@ -89,17 +105,42 @@ class DataSourceController:
 
                 if os.path.isfile(data_source_data_path_or_url):
                     # If it's a local file, read it directly
-                    data_source_data = pandas.read_csv(
-                        data_source_data_path_or_url)
+                    try:
+                        data_source_data = pandas.read_csv(
+                            data_source_data_path_or_url)
+                    except Exception as e:
+                        print(f"Error reading local file: {e}")
+                        return None, None
                 else:
                     # If it's a URL, download it first
-                    response = requests.get(data_source_data_path_or_url)
-                    response.raise_for_status()  # Raise an exception if the download failed
-                    data_source_data = pandas.read_csv(
-                        io.StringIO(response.text))
+                    try:
+                        response = requests.get(data_source_data_path_or_url)
+                        response.raise_for_status()  # Raise an exception if the download failed
+                        data_source_data = pandas.read_csv(
+                            io.StringIO(response.text))
+                    except Exception as e:
+                        print(
+                            f"Error downloading or reading file from URL: {e}")
+                        return None, None
 
                 window.close()
+
+                # Convert the DataFrame to a list of dictionaries
+                data_source_data = data_source_data.to_dict("records")
+
                 return data_source_name, data_source_data
             elif event == "Cancel" or event == sg.WIN_CLOSED:
                 window.close()
                 return None, None
+
+    def update_data_source_list(self):
+        # Fetch all data sources from the database
+        data_source_cursor = DataSource.find_by_username(
+            self.des.username) or []
+        print(data_source_cursor)
+        # Convert the cursor to a list of names
+        self.available_data_sources = []
+        for ds in data_source_cursor:
+            self.available_data_sources.append(ds['name'])
+
+        self.view.update_data_sources(self.available_data_sources)

@@ -7,9 +7,13 @@ class DataSourceManagerView:
             [sg.Text('Data Sources')],
             [sg.Listbox(values=data_sources, size=(30, 6),
                         key='-DATA_SOURCES-', enable_events=True)],
-            [sg.Button('Add'), sg.Button('Delete')]
+            [sg.Button('Load'), sg.Button('Add'),
+             sg.Button('Merge'), sg.Button('Delete')]
         ]
-        self.window = sg.Window('Data Source Manager', layout)
+        self.window = sg.Window('Data Source Manager', layout, finalize=True)
+
+    def update_data_sources(self, data_sources):
+        self.window['-DATA_SOURCES-'].update(data_sources)
 
     def read(self):
         return self.window.read()

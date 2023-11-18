@@ -2,7 +2,7 @@ import PySimpleGUI as sg
 
 
 class DataExplorerView:
-    def __init__(self, name, chat='', public_state=False):
+    def __init__(self, name, data=None, chat='', public_state=False):
 
         self.chat = ''
         for message in chat:
