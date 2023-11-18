@@ -12,13 +12,14 @@ class DataExplorer:
 
     db = Database(os.getenv("MONGO_URI"))
 
-    def __init__(self, name, username, _id=None, data=None, is_public=False):
+    def __init__(self, name, username, _id=None, data=None, is_public=False, chat=None):
         """Initializes a user object"""
         self._id = _id if _id else uuid.uuid4().hex
         self.name = name
         self.username = username
         self.data = data
         self.is_public = is_public
+        self.chat = chat if chat else []
 
     def save(self):
         """Saves the data explorer to the database"""
@@ -31,6 +32,7 @@ class DataExplorer:
                 "username": self.username,
                 "data": self.data,
                 "is_public": self.is_public,
+                "chat": self.chat,
             }
             print("Data Explorer Save:", data_explorer)
             result = data_explorers.update_one(
@@ -56,6 +58,7 @@ class DataExplorer:
                 self.username = data_explorer["username"]
                 self.data = data_explorer["data"]
                 self.is_public = data_explorer["is_public"]
+                self.chat = data_explorer["chat"]
 
         except Exception as e:
             print("Data Explorer Refresh Error:", e)
@@ -100,7 +103,8 @@ class DataExplorer:
                     username=data_explorer["username"],
                     _id=data_explorer["_id"],
                     data=data_explorer["data"],
-                    is_public=data_explorer["is_public"]
+                    is_public=data_explorer["is_public"],
+                    chat=data_explorer["chat"]
                 )
             else:
                 return None
@@ -124,7 +128,8 @@ class DataExplorer:
                     username=data_explorer["username"],
                     _id=data_explorer["_id"],
                     data=data_explorer["data"],
-                    is_public=data_explorer["is_public"]
+                    is_public=data_explorer["is_public"],
+                    chat=data_explorer["chat"]
                 )
             else:
                 return None

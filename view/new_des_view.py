@@ -7,7 +7,7 @@ class NewDesView:
         layout = [
             [sg.Text('Enter the name of the new DES:'),
              sg.Input(key='-NAME-')],
-            [sg.Button('Create'), sg.Button('Cancel')]
+            [sg.Button('Create', bind_return_key=True), sg.Button('Cancel')]
         ]
         self.window = sg.Window('New DES', layout)
 

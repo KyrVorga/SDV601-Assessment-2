@@ -10,7 +10,7 @@ class LoginView:
         self.layout = [
             [sg.Text("Username"), sg.InputText()],
             [sg.Text("Password"), sg.InputText(password_char="*")],
-            [sg.Button("Login"), sg.Button("Cancel")],
+            [sg.Button("Login", bind_return_key=True), sg.Button("Cancel")],
             [sg.Text("Don't have an account? "), sg.Text(
                 "Register", text_color="blue", enable_events=True)]
         ]

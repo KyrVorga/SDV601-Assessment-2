@@ -5,6 +5,7 @@ from view.data_explorer_view import DataExplorerView
 from view.data_explorer_public_view import DataExplorerPublicView
 import PySimpleGUI as sg
 import threading
+from datetime import datetime
 
 
 class DataExplorerController:
@@ -16,10 +17,11 @@ class DataExplorerController:
         self.username = username
         self.des = des
         if self.username != self.des.username:
-            self.view = DataExplorerPublicView(self.des.name)
+            self.view = DataExplorerPublicView(self.des.name, self.des.chat)
             self.is_owner = False
         else:
-            self.view = DataExplorerView(self.des.name, self.des.is_public)
+            self.view = DataExplorerView(
+                self.des.name, self.des.chat, self.des.is_public)
             self.is_owner = True
 
     def run(self):
@@ -50,9 +52,19 @@ class DataExplorerController:
                     data = values[0]
                     # Add your data exploration logic here
 
-        self.view.close()
-        thread.join()
-        raise SystemExit
+                case "Send":
+                    text = values["-CHAT-"]
+
+                    current_time = datetime.now().time()
+                    current_time_str = current_time.strftime("%H:%M:%S")
+                    message = f"{current_time_str} | {self.username}: {text}"
+
+                    self.des.chat.append(message)
+                    self.des.save()
+
+        # self.view.close()
+        # thread.join()
+        # raise SystemExit
 
     def watch_for_changes(self):
         """
@@ -86,3 +98,9 @@ class DataExplorerController:
                                     self.des.is_public = change["updateDescription"]["updatedFields"]["is_public"]
                                     print("Public State:", self.des.is_public)
                                     self.view.public_state = self.des.is_public
+
+                            if "chat" in change["updateDescription"]["updatedFields"]:
+                                chat = ''
+                                for message in self.des.chat:
+                                    chat += message + '\n'
+                                self.view.window["-OUTPUT-"].update(chat)

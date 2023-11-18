@@ -2,13 +2,32 @@ import PySimpleGUI as sg
 
 
 class DataExplorerView:
-    def __init__(self, name, public_state=False):
-        layout = [
+    def __init__(self, name, chat='', public_state=False):
+
+        self.chat = ''
+        for message in chat:
+            self.chat += message + '\n'
+
+        chat_layout = [
+            [sg.Multiline(size=(40, 20), disabled=True,
+                          autoscroll=True, key='-OUTPUT-')],
+            [sg.Input(size=(35, 5),
+                      key='-CHAT-', do_not_clear=False)],
+            [sg.Button('Send', bind_return_key=True)]
+        ]
+
+        explorer_layout = [
             [sg.Text('Enter data to explore:'), sg.Input(key='-DATA-')],
             [sg.Button('Explore'), sg.Button('Cancel'),
              sg.Checkbox('Make Public', key='-PUBLIC-', enable_events=True, default=public_state)]
         ]
+
+        layout = [
+            [sg.Column(explorer_layout), sg.Column(chat_layout)]
+        ]
+
         self.window = sg.Window(name, layout, modal=False, finalize=True)
+        self.window['-OUTPUT-'].update(self.chat, append=True)
         self._public_state = public_state
 
     @property

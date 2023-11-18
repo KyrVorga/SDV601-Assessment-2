@@ -181,9 +181,6 @@ class HomeController:
                             self.des_list = DataExplorer.find_available_des(
                                 self.session.user.username)
 
-                    case "Update List":
-                        self.update_des_list()
-
             # self.view.close()
 
         except Exception as e:
