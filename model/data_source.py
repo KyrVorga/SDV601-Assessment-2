@@ -24,12 +24,6 @@ class DataSource:
         try:
             data_sources = self.db.get_collection("data_sources")
 
-            # Check if a data source with the same name already exists
-            data_source = data_sources.find_one({"name": self.name})
-            if data_source:
-                raise Exception(
-                    "Data Source with the same name already exists")
-
             data_source = {
                 "name": self.name,
                 "username": self.username,

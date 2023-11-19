@@ -19,7 +19,7 @@ class HomeController:
     """Home controller class"""
 
     db = Database.getInstance()
-    collection = db.get_collection("data_sources")
+    collection = db.get_collection("data_explorers")
 
     def __init__(self, session):
         self.session = session

@@ -13,8 +13,9 @@ class DataSourceController:
     db = Database.getInstance()
     collection = db.get_collection("data_sources")
 
-    def __init__(self, des):
+    def __init__(self, des, des_controller):
         self.des = des
+        self.des_controller = des_controller
         self.view = DataSourceManagerView()
         self.update_data_source_list()
 
@@ -27,12 +28,14 @@ class DataSourceController:
 
         while True:
             event, values = self.view.read()
-            print(event, values)
+            # print(event, values)
             match event:
                 case sg.WIN_CLOSED:
-                    os._exit(0)
+                    self.view.close()
+                    break
 
                 case "Cancel":
+                    self.view.close()
                     break
 
                 case "Add":
@@ -59,6 +62,23 @@ class DataSourceController:
                     data_source_name = values["-DATA_SOURCES-"][0]
                     self.des.data = data_source_name
                     self.des.save()
+                    self.view.close()
+                    break
+
+                case "Merge":
+                    data_source_name = values["-DATA_SOURCES-"][0]
+                    data_source = DataSource.find_by_name(data_source_name)
+                    new_data = self.open_data_source_modal(False)[1]
+
+                    # Merge the new data with the existing data
+                    data_source.data.extend(new_data)
+
+                    # Save the data source
+                    data_source.save()
+
+                    # Update the des view
+                    self.des_controller.view.window.TKroot.after(
+                        0, self.des_controller.plot_data_source)
 
     def watch_for_changes(self):
         """
@@ -66,9 +86,10 @@ class DataSourceController:
         and refreshes the Data Source if a change is detected,
         also updates the view to reflect the changes.
         """
+        print("Watching for changes...")
         with self.collection.watch() as stream:
             for change in stream:
-                print(self.des._id, change["documentKey"]["_id"])
+                # print(self.des._id, change["documentKey"]["_id"])
 
                 match change["operationType"]:
                     case "insert":
@@ -86,21 +107,26 @@ class DataSourceController:
                         self.view.update_data_sources(
                             self.available_data_sources)
 
-    def open_data_source_modal(self):
+    def open_data_source_modal(self, require_name=True):
         layout = [
-            [sg.Text("Data Source Name:")],
-            [sg.Input(key="-NAME-")],
             [sg.Text("Upload a .csv")],
             [sg.Input(key="-DATA-"), sg.FileBrowse()],
             [sg.Button("OK"), sg.Button("Cancel")]
         ]
+        if require_name:
+
+            layout.insert(0, [sg.Text("Data Source Name:"),
+                              [sg.Input(key="-NAME-")]])
 
         window = sg.Window("Add Data Source", layout)
 
         while True:
             event, values = window.read()
             if event == "OK":
-                data_source_name = values["-NAME-"]
+                if require_name:
+                    data_source_name = values["-NAME-"]
+                else:
+                    data_source_name = True
                 data_source_data_path_or_url = values["-DATA-"]
 
                 # Check if the data source value is empty
@@ -116,7 +142,7 @@ class DataSourceController:
                                 data_source_data_path_or_url)
                         except Exception as e:
                             print(f"Error reading local file: {e}")
-                            return None, None
+                            break
                     else:
                         # If it's a URL, download it first
                         try:
@@ -128,17 +154,21 @@ class DataSourceController:
                         except Exception as e:
                             print(
                                 f"Error downloading or reading file from URL: {e}")
-                            return None, None
+                            break
 
                     window.close()
 
                     # Convert the DataFrame to a list of dictionaries
                     data_source_data = data_source_data.to_dict("records")
 
-                    return data_source_name, data_source_data
+                    if require_name:
+                        return data_source_data
+                    else:
+                        return data_source_name, data_source_data
+
             elif event == "Cancel" or event == sg.WIN_CLOSED:
                 window.close()
-                return None, None
+                break
 
     def update_data_source_list(self):
         # Fetch all data sources from the database
