@@ -48,6 +48,10 @@ class HomeController:
 
         self.view.update_des_list(self.data_explorers)
 
+    def terminate_subprocess(self):
+        for process in self.active_data_explorers.values():
+            process.terminate()
+
     def run(self):
         try:
 
@@ -70,9 +74,7 @@ class HomeController:
                     case sg.WIN_CLOSED:
                         self.session.logout(False)
                         self.session.status = False
-                        # thread.join()
-                        for process in self.active_data_explorers.values():
-                            process.terminate()
+                        self.terminate_subprocess()
                         break
 
                     case "Logout":
@@ -80,6 +82,7 @@ class HomeController:
                         Session.clear_session_id()
                         self.session.status = False
                         self.view.hide()
+                        # self.terminate_subprocess()
                         login_controller = LoginController(self.session)
                         # print("Home - Running login controller")
                         login_controller.run()
@@ -87,6 +90,8 @@ class HomeController:
                         if self.session.logged_in:
                             self.view.un_hide()
                             self.session.status = True
+                            # Update the DES list
+                            self.update_des_list()
                         else:
                             self.view.close()
 

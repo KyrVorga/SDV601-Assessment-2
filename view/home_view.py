@@ -25,7 +25,7 @@ class HomeView():
             [sg.Text("Welcome to the home page"), sg.Button("Logout")],
             [sg.Listbox(values=[], size=(40, 10), key='-LIST-')],
             [sg.Button("Load DES"), sg.Button(
-                "New DES"), sg.Button("Delete DES"), sg.Button("Update List")],
+                "New DES"), sg.Button("Delete DES")],
         ]
 
         self.window = sg.Window("Home", self.layout, finalize=True)

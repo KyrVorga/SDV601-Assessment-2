@@ -40,6 +40,7 @@ class RegisterController:
                         user.save()
                         sg.popup("Registration successful")
                         self.view.hide()
+                        break
 
             self.view.hide()
 
